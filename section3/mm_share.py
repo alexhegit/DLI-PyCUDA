@@ -6,6 +6,7 @@
 
 from numba import cuda, float32
 import numpy as np
+from numpy import testing
 import math
 from time import time
 
@@ -89,12 +90,15 @@ def main():
     matmul[blocks_per_grid, threads_per_block](A_device, B_device, C_device)
     cuda.synchronize()
     print("matmul time :" + str(time() - start))
+    C1 = C_device.copy_to_host()
 
     start = time()
     matmul_shared_memory[blocks_per_grid, threads_per_block](A_device, B_device, C_device)
     cuda.synchronize()
     print("matmul with shared memory time :" + str(time() - start))
     C = C_device.copy_to_host()
+
+    testing.assert_array_equal(C1, C)
 
 if __name__ == "__main__":
     main()
